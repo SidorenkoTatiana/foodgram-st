@@ -1,11 +1,16 @@
+import base64
+
 from django.core.files.base import ContentFile
 from rest_framework import serializers
+
 from recipes.models import (
-    Recipe, Ingredient, RecipeIngredient, ShoppingCart, FavoriteRecipe
+    Recipe,
+    Ingredient,
+    RecipeIngredient,
+    ShoppingCart,
+    FavoriteRecipe,
 )
 from users.models import Subscribers, User
-
-import base64
 
 
 class Base64ImageField(serializers.ImageField):
@@ -31,11 +36,10 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_is_subscribed(self, obj):
         user = self.context.get('request')
-        return (
-            user and
-            user.user.is_authenticated and
-            Subscribers.objects.filter(author=obj, user=user.user).exists()
-        )
+        return bool(user and user.user.is_authenticated
+                    and Subscribers.objects.filter(
+                        author=obj,
+                        user=user.user).exists())
 
     def validate_avatar(self, value):
         if not value:
