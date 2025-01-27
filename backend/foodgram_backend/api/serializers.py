@@ -30,7 +30,11 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_is_subscribed(self, obj):
         user = self.context.get('request')
-        return bool(user and user.user.is_authenticated and Subscribers.objects.filter(author=obj, user=user.user).exists())
+        return (
+            user and
+            user.user.is_authenticated and
+            Subscribers.objects.filter(author=obj, user=user.user).exists()
+        )
 
     def validate_avatar(self, value):
         if not value:
@@ -40,7 +44,6 @@ class UserSerializer(serializers.ModelSerializer):
         return value
 
     def is_valid_avatar(self, avatar_data):
-        # Здесь можно добавить логику валидации аватара
         return True
 
     def get_avatar(self, obj):
@@ -116,14 +119,16 @@ class RecipeSerializer(serializers.ModelSerializer):
     def get_is_favorited(self, obj):
         request = self.context.get('request')
         if request.user.is_authenticated:
-            return FavoriteRecipe.objects.filter(user=request.user, recipe=obj).exists()
-        return False  # Возвращаем False для неавторизованных пользователей
+            return FavoriteRecipe.objects.filter(
+                user=request.user, recipe=obj).exists()
+        return False
 
     def get_is_in_shopping_cart(self, obj):
         request = self.context.get('request')
         if request.user.is_authenticated:
-            return ShoppingCart.objects.filter(user=request.user, recipe=obj).exists()
-        return False  # Возвращаем False для неавторизованных пользователей
+            return ShoppingCart.objects.filter(
+                user=request.user, recipe=obj).exists()
+        return False
 
     def validate(self, data):
         ingredients = data.get('ingredients')
@@ -166,7 +171,9 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation['image'] = instance.image.url if instance.image else None
+        representation['image'] = (
+            instance.image.url if instance.image else None
+        )
 
         ingredients = instance.recipeingredients.select_related('ingredient')
         representation['ingredients'] = [

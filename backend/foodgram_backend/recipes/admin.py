@@ -12,7 +12,7 @@ class SubscribersInline(admin.TabularInline):
     min_num = 1
 
 
-class UserAdmin(UserAdmin):
+class AdminUser(UserAdmin):
     """Настройка Админки-Пользователей."""
 
     @admin.display(description='Подписчики')
@@ -80,6 +80,6 @@ class RecipeAdmin(admin.ModelAdmin):
     empty_value_display = 'Не задано'
 
 
-admin.site.register(User, UserAdmin)
+admin.site.register(User, AdminUser)
 admin.site.register(Ingredient, IngredientAdmin)
 admin.site.register(Recipe, RecipeAdmin)

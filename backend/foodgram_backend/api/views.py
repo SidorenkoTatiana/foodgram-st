@@ -18,21 +18,29 @@ class BaseFilterViewSet(viewsets.ModelViewSet):
         request = self.request
         filters = {
             'is_favorited': request.query_params.get('is_favorited'),
-            'is_in_shopping_cart': request.query_params.get('is_in_shopping_cart'),
+            'is_in_shopping_cart': request.query_params.get(
+                'is_in_shopping_cart'
+            ),
             'author_id': request.query_params.get('author')
         }
 
         if request.user.is_authenticated:
             queryset = queryset.annotate(
-                is_favorited=Exists(FavoriteRecipe.objects.filter(user=request.user, recipe=OuterRef('pk'))),
-                is_in_shopping_cart=Exists(ShoppingCart.objects.filter(user=request.user, recipe=OuterRef('pk')))
+                is_favorited=Exists(FavoriteRecipe.objects.filter(
+                    user=request.user, recipe=OuterRef('pk'))),
+                is_in_shopping_cart=Exists(ShoppingCart.objects.filter(
+                    user=request.user, recipe=OuterRef('pk')))
             )
 
             if filters['is_favorited'] in ['0', '1']:
-                queryset = queryset.filter(is_favorited=(filters['is_favorited'] == '1'))
+                queryset = queryset.filter(
+                    is_favorited=(filters['is_favorited'] == '1')
+                )
 
             if filters['is_in_shopping_cart'] in ['0', '1']:
-                queryset = queryset.filter(is_in_shopping_cart=(filters['is_in_shopping_cart'] == '1'))
+                queryset = queryset.filter(
+                    is_in_shopping_cart=(filters['is_in_shopping_cart'] == '1')
+                )
 
         if filters['author_id']:
             queryset = queryset.filter(author_id=filters['author_id'])
