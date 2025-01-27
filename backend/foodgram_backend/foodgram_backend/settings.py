@@ -158,4 +158,6 @@ DJOSER = {
     "LOGIN_FIELD": "email",
 }
 
-CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:8000',
+]
