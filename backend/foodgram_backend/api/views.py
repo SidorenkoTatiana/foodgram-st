@@ -4,7 +4,6 @@ from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.exceptions import PermissionDenied
 from recipes.models import Recipe, Ingredient, FavoriteRecipe, ShoppingCart
 from users.models import Subscribers, User
 from .paginations import Pagination
