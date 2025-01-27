@@ -1,5 +1,5 @@
-from django.db.models import F
-from django.http import FileResponse, HttpResponse
+from django.db.models import F, Exists, OuterRef
+from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
@@ -19,18 +19,21 @@ class BaseFilterViewSet(viewsets.ModelViewSet):
         request = self.request
         filters = {
             'is_favorited': request.query_params.get('is_favorited'),
-            'is_in_shopping_cart': request.query_params.get(
-                'is_in_shopping_cart'),
+            'is_in_shopping_cart': request.query_params.get('is_in_shopping_cart'),
             'author_id': request.query_params.get('author')
         }
 
-        if filters['is_favorited'] in ['0', '1']:
-            queryset = queryset.filter(
-                is_favorited=(filters['is_favorited'] == '1'))
+        if request.user.is_authenticated:
+            queryset = queryset.annotate(
+                is_favorited=Exists(FavoriteRecipe.objects.filter(user=request.user, recipe=OuterRef('pk'))),
+                is_in_shopping_cart=Exists(ShoppingCart.objects.filter(user=request.user, recipe=OuterRef('pk')))
+            )
 
-        if filters['is_in_shopping_cart'] in ['0', '1']:
-            queryset = queryset.filter(
-                is_in_shopping_cart=(filters['is_in_shopping_cart'] == '1'))
+            if filters['is_favorited'] in ['0', '1']:
+                queryset = queryset.filter(is_favorited=(filters['is_favorited'] == '1'))
+
+            if filters['is_in_shopping_cart'] in ['0', '1']:
+                queryset = queryset.filter(is_in_shopping_cart=(filters['is_in_shopping_cart'] == '1'))
 
         if filters['author_id']:
             queryset = queryset.filter(author_id=filters['author_id'])
@@ -67,7 +70,7 @@ class UserViewSet(BaseFilterViewSet):
     def create(self, request, *args, **kwargs):
         serializer = serializers.UserRegistrationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.save()
+        serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @action(methods=['GET'], detail=False)
@@ -162,37 +165,17 @@ class RecipeViewSet(BaseFilterViewSet):
             return [permissions.AllowAny()]
         return [permissions.IsAuthenticated()]
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        return queryset.order_by('-id')
+
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
-
-    def update(self, request, *args, **kwargs):
-        recipe = self.get_object()
-        if recipe.author != request.user:
-            raise PermissionDenied(
-                "У вас нет прав для изменения этого рецепта."
-            )
-
-        serializer = self.get_serializer(
-            recipe, data=request.data, partial=True
-        )
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def destroy(self, request, *args, **kwargs):
-        recipe = self.get_object()
-        if recipe.author != request.user:
-            raise PermissionDenied(
-                "У вас нет прав для удаления этого рецепта."
-            )
-
-        recipe.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=['get'], url_path='get-link')
     def get_link(self, request, pk=None):
         recipe = self.get_object()
-        short_link = f"http://foodgram.com/recipes/{recipe.id}/"
+        short_link = f"http://localhost:8000/recipes/{recipe.id}/"
         return Response({'short-link': short_link}, status=status.HTTP_200_OK)
 
     @action(methods=['GET'],

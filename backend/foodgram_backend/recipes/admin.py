@@ -64,8 +64,8 @@ class RecipeAdmin(admin.ModelAdmin):
         ingredients = obj.recipeingredients.all()
         return (
             ', '.join(
-                [f'{ingredient.ingredients} - {ingredient.amount} '
-                 f'{ingredient.ingredients.measurement_unit}'
+                [f'{ingredient.ingredient} - {ingredient.amount} '
+                 f'{ingredient.ingredient.measurement_unit}'
                  for ingredient in ingredients])
         )
 

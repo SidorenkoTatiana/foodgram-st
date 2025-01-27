@@ -1,7 +1,9 @@
 import base64
 from django.core.files.base import ContentFile
 from rest_framework import serializers
-from recipes.models import Recipe, Ingredient, RecipeIngredient, ShoppingCart
+from recipes.models import (
+    Recipe, Ingredient, RecipeIngredient, ShoppingCart, FavoriteRecipe
+)
 from users.models import Subscribers, User
 
 
@@ -101,6 +103,8 @@ class RecipeSerializer(serializers.ModelSerializer):
     author = UserSerializer(read_only=True)
     image = Base64ImageField(required=True)
     ingredients = IngredientsInRecipeSerializer(many=True, write_only=True)
+    is_favorited = serializers.SerializerMethodField()
+    is_in_shopping_cart = serializers.SerializerMethodField()
 
     class Meta:
         model = Recipe
@@ -108,6 +112,18 @@ class RecipeSerializer(serializers.ModelSerializer):
             'id', 'author', 'ingredients', 'is_favorited',
             'is_in_shopping_cart', 'name', 'image', 'text', 'cooking_time'
         )
+
+    def get_is_favorited(self, obj):
+        request = self.context.get('request')
+        if request.user.is_authenticated:
+            return FavoriteRecipe.objects.filter(user=request.user, recipe=obj).exists()
+        return False  # Возвращаем False для неавторизованных пользователей
+
+    def get_is_in_shopping_cart(self, obj):
+        request = self.context.get('request')
+        if request.user.is_authenticated:
+            return ShoppingCart.objects.filter(user=request.user, recipe=obj).exists()
+        return False  # Возвращаем False для неавторизованных пользователей
 
     def validate(self, data):
         ingredients = data.get('ingredients')
@@ -134,11 +150,11 @@ class RecipeSerializer(serializers.ModelSerializer):
         return recipe
 
     def update(self, recipe, validated_data):
-        ingredients = validated_data.pop('ingredients', None)
-        if ingredients is not None:
-            recipe.recipeingredients.all().delete()
-            self.add_ingredients(ingredients, recipe)
-        return super().update(recipe, validated_data)
+        ingredients = validated_data.pop('ingredients')
+        recipe.ingredients.clear()
+        recipe = super().update(recipe, validated_data)
+        self.add_ingredients(ingredients, recipe)
+        return recipe
 
     def add_ingredients(self, ingredients, recipe):
         for ingredient in ingredients:

@@ -45,16 +45,6 @@ class Recipe(models.Model):
         related_name='recipes',
         verbose_name="Список ингредиентов"
     )
-    is_favorited = models.BooleanField(
-        default=False,
-        verbose_name='Находится ли в избранном',
-        help_text='Отметьте рецепт в избранное'
-    )
-    is_in_shopping_cart = models.BooleanField(
-        default=False,
-        verbose_name="Находится ли в корзине",
-        help_text='Отложите рецепт в корзину'
-    )
     name = models.CharField(
         max_length=256,
         verbose_name='Название рецепта',
