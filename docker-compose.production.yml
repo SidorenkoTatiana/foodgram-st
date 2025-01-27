@@ -13,7 +13,7 @@ services:
       - pg_data:/var/lib/postgresql/data
   
   backend:
-    image: foodgram-st-backend-1
+    image: sidorenkotatiana/foodgram_backend
     env_file: .env
     volumes:
       - static:/backend_static
@@ -22,14 +22,14 @@ services:
       - db
   
   frontend:
-    image: foodgram-st-frontend-1
+    image: sidorenkotatiana/foodgram_frontend
     env_file: .env
     command: cp -r /app/build/. /static/
     volumes:
       - static:/frontend_static
   
   gateway:
-    image: foodgram-st-gateway-1
+    image: sidorenkotatiana/foodgram_gateway
     env_file: .env
     volumes:
       - static:/staticfiles
