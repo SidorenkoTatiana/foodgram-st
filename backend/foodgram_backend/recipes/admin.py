@@ -1,7 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from import_export.admin import ImportExportActionModelAdmin
-
 from users.models import Subscribers, User
 
 from .models import Ingredient, Recipe, RecipeIngredient
