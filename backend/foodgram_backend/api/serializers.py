@@ -255,7 +255,8 @@ class SubscriptionsListSerializer(serializers.ModelSerializer):
         except ValueError:
             limit = 6
         return RecipeMinifiedSerializer(
-            models.Recipe.objects.filter(author=obj.author)[:limit], many=True).data
+            models.Recipe.objects.filter(
+                author=obj.author)[:limit], many=True).data
 
     def get_recipes_count(self, obj):
         return models.Recipe.objects.filter(author=obj.author).count()
