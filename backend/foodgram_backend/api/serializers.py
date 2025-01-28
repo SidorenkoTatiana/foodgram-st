@@ -1,10 +1,8 @@
 import base64
 
 from django.core.files.base import ContentFile
+from recipes import models
 from rest_framework import serializers
-
-from recipes.models import (FavoriteRecipe, Ingredient, Recipe,
-                            RecipeIngredient, ShoppingCart)
 from users.models import Subscribers, User
 
 
@@ -88,16 +86,17 @@ class IngredientSerializer(serializers.ModelSerializer):
     """Сериализатор для ингредиента."""
 
     class Meta:
-        model = Ingredient
+        model = models.Ingredient
         fields = ('id', 'name', 'measurement_unit')
 
 
 class IngredientsInRecipeSerializer(serializers.ModelSerializer):
     """Вспомогательный сериализатор для отображения ингредиентов рецепта."""
-    id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
+    id = serializers.PrimaryKeyRelatedField(
+        queryset=models.Ingredient.objects.all())
 
     class Meta:
-        model = RecipeIngredient
+        model = models.RecipeIngredient
         fields = ('id', 'amount')
 
 
@@ -110,7 +109,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     is_in_shopping_cart = serializers.SerializerMethodField()
 
     class Meta:
-        model = Recipe
+        model = models.Recipe
         fields = (
             'id', 'author', 'ingredients', 'is_favorited',
             'is_in_shopping_cart', 'name', 'image', 'text', 'cooking_time'
@@ -119,14 +118,14 @@ class RecipeSerializer(serializers.ModelSerializer):
     def get_is_favorited(self, obj):
         request = self.context.get('request')
         if request.user.is_authenticated:
-            return FavoriteRecipe.objects.filter(
+            return models.FavoriteRecipe.objects.filter(
                 user=request.user, recipe=obj).exists()
         return False
 
     def get_is_in_shopping_cart(self, obj):
         request = self.context.get('request')
         if request.user.is_authenticated:
-            return ShoppingCart.objects.filter(
+            return models.ShoppingCart.objects.filter(
                 user=request.user, recipe=obj).exists()
         return False
 
@@ -163,7 +162,7 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def add_ingredients(self, ingredients, recipe):
         for ingredient in ingredients:
-            RecipeIngredient.objects.create(
+            models.RecipeIngredient.objects.create(
                 recipe=recipe,
                 ingredient=ingredient['id'],
                 amount=ingredient['amount']
@@ -193,7 +192,7 @@ class RecipeMinifiedSerializer(serializers.ModelSerializer):
     image = Base64ImageField(required=False, allow_null=True)
 
     class Meta:
-        model = Recipe
+        model = models.Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
 
 
@@ -210,7 +209,7 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
         read_only=True)
 
     class Meta:
-        model = ShoppingCart
+        model = models.ShoppingCart
         fields = ('id', 'name', 'image', 'cooking_time')
 
 
@@ -256,10 +255,10 @@ class SubscriptionsListSerializer(serializers.ModelSerializer):
         except ValueError:
             limit = 6
         return RecipeMinifiedSerializer(
-            Recipe.objects.filter(author=obj.author)[:limit], many=True).data
+            models.Recipe.objects.filter(author=obj.author)[:limit], many=True).data
 
     def get_recipes_count(self, obj):
-        return Recipe.objects.filter(author=obj.author).count()
+        return models.Recipe.objects.filter(author=obj.author).count()
 
 
 class SubscribeSerializer(serializers.ModelSerializer):
