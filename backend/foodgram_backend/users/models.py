@@ -32,8 +32,9 @@ class User(AbstractUser):
     )
     email = models.EmailField(
         unique=True,
+        max_length=254,
         verbose_name='Email',
-        help_text='Укажите email'
+        help_text='Укажите email',
     )
     avatar = models.ImageField(
         upload_to='users/',
@@ -46,12 +47,6 @@ class User(AbstractUser):
         ordering = ('username',)
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
-
-    @property
-    def avatar_url(self):
-        if self.avatar:
-            return f"{settings.MEDIA_URL}{self.avatar}"
-        return None
 
     def __str__(self):
         return self.email
@@ -73,6 +68,21 @@ class Subscribers(models.Model):
         verbose_name='Подписчик',
         help_text='Укажите подписчика'
     )
+
+    class Meta:
+        ordering = ('author',)
+        verbose_name = 'Автор - подписчик'
+        verbose_name_plural = verbose_name
+        constraints = [
+            models.UniqueConstraint(
+                fields=['author', 'user'],
+                name='unique_author_user'
+            ),
+            models.CheckConstraint(
+                check=~models.Q(author=models.F('user')),
+                name='author_and_user_different',
+            )
+        ]
 
     def __str__(self):
         return f"{self.author} - {self.user}"
