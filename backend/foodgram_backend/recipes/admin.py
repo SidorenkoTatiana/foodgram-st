@@ -88,14 +88,16 @@ class RecipeAdmin(admin.ModelAdmin):
     def get_image(self, obj):
         """Метод для отображения картинки рецепта в админке."""
         if obj.image:
-            return f'<img src="{obj.image.url}" style="width: 100px; height: 100px;" />'
+            return f'<img src="{obj.image.url}" style="width: 100px; ' \
+                'height: 100px;" />'
         return 'Нет изображения'
 
     @admin.display(description='Ингредиенты')
     def get_ingredients(self, obj):
-        """Функция для корректного отображения ингредиентов в list_display Админке-Рецептов."""
+        """Функция для корректного отображения ингредиентов."""
         return '\n'.join(
-            f'{ingredient.ingredient} - {ingredient.amount} {ingredient.ingredient.measurement_unit}'
+            f'{ingredient.ingredient} - {ingredient.amount} ' \
+                f'{ingredient.ingredient.measurement_unit}'
             for ingredient in obj.recipeingredients.all()
         )
 
