@@ -184,8 +184,12 @@ class RecipeViewSet(BaseFilterViewSet):
         report_content = '\n'.join([
             f'Список покупок на дату {report_date}:',
             'Продукты:',
-            *[f"{idx + 1}. {ingredient.capitalize()} - {amount} ({measurement_unit})"
-              for idx, (ingredient, (amount, measurement_unit)) in enumerate(ingredients.items())],
+            *[
+                f"{idx + 1}. {ingredient.capitalize()} - {amount} " \
+                f"({measurement_unit})"
+                for idx, (ingredient, (amount, measurement_unit)) in enumerate(
+                    ingredients.items())
+            ],
             'Рецепты:',
             *[f"{recipe}" for recipe in recipes],
         ])

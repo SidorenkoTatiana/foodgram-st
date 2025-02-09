@@ -36,7 +36,8 @@ class AdminUser(UserAdmin):
     def get_avatar(self, obj):
         """Метод для отображения аватара пользователя в админке."""
         if obj.avatar:
-            return f'<img src="{obj.avatar.url}" style="width: 50px; height: 50px;" />'
+            return f'<img src="{obj.avatar.url}" style="width: 50px; ' \
+                'height: 50px;" />'
         return 'Нет аватара'
 
     list_display = (
