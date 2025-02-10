@@ -113,7 +113,7 @@ class RecipeListSerializer(serializers.ModelSerializer):
                 and models.ShoppingCart.objects.filter(
                     user=request.user,
                     recipe=obj
-                    ).exists()
+                ).exists()
                 )
 
 
