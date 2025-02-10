@@ -1,7 +1,8 @@
 from djoser.serializers import UserCreateSerializer
 from drf_extra_fields.fields import Base64ImageField
-from recipes import models
 from rest_framework import serializers
+
+from recipes import models
 from users.models import Subscribers, User
 
 
@@ -23,11 +24,6 @@ class CustomUserSerializer(UserCreateSerializer):
                 and Subscribers.objects.filter(
                     author=user_instance,
                     user=user.user).exists())
-
-    def update(self, instance, validated_data):
-        if 'avatar' in validated_data:
-            instance.avatar = validated_data['avatar']
-        return super().update(instance, validated_data)
 
     def validate(self, data):
         avatar = self.initial_data.get("avatar")
@@ -81,20 +77,6 @@ class IngredientsInRecipeSerializer(serializers.ModelSerializer):
         model = models.RecipeIngredient
         fields = ('id', 'amount')
 
-    def validate(self, data):
-        ingredient = models.Ingredient.objects.get(id=data['id'])
-        amount = data['amount']
-
-        if amount < 1:
-            raise serializers.ValidationError(
-                "Количество ингредиента должно быть не менее 1.")
-
-        if not ingredient.measurement_unit:
-            raise serializers.ValidationError(
-                "У ингредиента должна быть указана мера измерения.")
-
-        return data
-
 
 class RecipeListSerializer(serializers.ModelSerializer):
     """Сериализатор для рецепта."""
@@ -141,13 +123,15 @@ class RecipeListSerializer(serializers.ModelSerializer):
 class RecipeSerializer(serializers.ModelSerializer):
     """Cериалайзер для метода Post, PATCH и DEL модели рецептов."""
 
-    author = CustomUserSerializer(read_only=True)
-    image = Base64ImageField(required=True)
-    ingredients = IngredientsInRecipeSerializer(many=True)
+    ingredients = IngredientsInRecipeSerializer(many=True, write_only=True)
+    author = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    image = Base64ImageField()
 
     class Meta:
         model = models.Recipe
         fields = (
+            "id",
+            "author",
             "ingredients",
             "name",
             "image",
@@ -157,22 +141,20 @@ class RecipeSerializer(serializers.ModelSerializer):
         )
 
     def validate(self, data):
+        """Валидация при создании рецепта."""
         ingredients = data.get('ingredients')
         image = data.get('image')
-
         if not ingredients:
-            raise serializers.ValidationError(
-                'Укажите необходимые ингредиенты для рецепта!')
-
-        ingredients_id_list = [ingredient['id'] for ingredient in ingredients]
+            raise serializers.ValidationError('Укажите необходимые'
+                                              ' ингридиенты для рецепта!')
+        ingredients_id_list = [id['id'] for id in ingredients]
         if len(ingredients_id_list) != len(set(ingredients_id_list)):
-            raise serializers.ValidationError(
-                'Вы указали одинаковые ингредиенты при создании рецепта!')
-
+            raise serializers.ValidationError('Вы указали одинаковые '
+                                              'ингридиенты при создании '
+                                              'рецепта!')
         if not image:
-            raise serializers.ValidationError(
-                'Вы не указали картинку рецепта!')
-
+            raise serializers.ValidationError('Вы не указали картинку '
+                                              'рецепта!')
         return data
 
     def create(self, validated_data):

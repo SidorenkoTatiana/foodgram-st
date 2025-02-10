@@ -97,8 +97,8 @@ class RecipeAdmin(admin.ModelAdmin):
     def get_ingredients(self, obj):
         """Функция для корректного отображения ингредиентов."""
         return '\n'.join(
-            f'{ingredient.ingredient} - {ingredient.amount} ' \
-                f'{ingredient.ingredient.measurement_unit}'
+            f'{ingredient.ingredient} - {ingredient.amount} '
+            f'{ingredient.ingredient.measurement_unit}'
             for ingredient in obj.recipeingredients.all()
         )
 
