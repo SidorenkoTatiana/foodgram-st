@@ -92,13 +92,14 @@ class RecipeAdmin(admin.ModelAdmin):
         return 'Нет изображения'
 
     @admin.display(description='Ингредиенты')
+    @mark_safe
     def get_ingredients(self, obj):
         """Функция для корректного отображения ингредиентов."""
-        return mark_safe('<br>'.join(
+        return '<br>'.join(
             f'{ingredient.ingredient} - {ingredient.amount} '
             f'{ingredient.ingredient.measurement_unit}'
             for ingredient in obj.recipeingredients.all()
-        ))
+        )
 
     @admin.display(description='Избранное')
     def get_favorites_count(self, obj):

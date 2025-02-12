@@ -116,9 +116,9 @@ class UserProfileViewSet(UserViewSet):
             )
 
         if request.method == 'DELETE':
-            subscription = get_object_or_404(
-                Subscribers, author=author, user=request.user)
-            subscription.delete()
+            get_object_or_404(
+                Subscribers, author=author, user=request.user
+            ).delete()
 
             return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -169,9 +169,8 @@ class RecipeViewSet(BaseFilterViewSet):
 
     @action(detail=True, methods=['get'], url_path='get-link')
     def get_link(self, request, pk):
-        instance = self.get_object()
         url = request.build_absolute_uri(reverse(
-            'short-link', kwargs={'pk': instance.id}))
+            'short-link', kwargs={'pk': pk}))
         return Response(data={"short-link": url})
 
     @action(methods=['GET'],
@@ -256,15 +255,10 @@ class RecipeViewSet(BaseFilterViewSet):
     def update_cart_favorite(request, recipe, model,
                              already_added_msg, not_found_msg):
         if request.method == 'POST':
-            if model.objects.filter(user=request.user, recipe=recipe).exists():
+            obj, created = model.objects.get_or_create(
+                user=request.user, recipe=recipe)
+            if not created:
                 raise ValidationError(already_added_msg)
-
-            model.objects.create(user=request.user, recipe=recipe)
-            if model == ShoppingCart:
-                recipe.is_in_shopping_cart = True
-            else:
-                recipe.is_favorited = True
-            recipe.save()
 
             return Response(serializers.RecipeMinifiedSerializer(
                 recipe,
@@ -272,13 +266,7 @@ class RecipeViewSet(BaseFilterViewSet):
                 status=status.HTTP_201_CREATED
             )
 
-        item = get_object_or_404(model, user=request.user, recipe=recipe)
-        item.delete()
-        if model == ShoppingCart:
-            recipe.is_in_shopping_cart = False
-        else:
-            recipe.is_favorited = False
-        recipe.save()
+        get_object_or_404(model, user=request.user, recipe=recipe).delete()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 

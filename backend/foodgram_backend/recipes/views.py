@@ -1,8 +1,5 @@
-from django.shortcuts import get_object_or_404, redirect
-
-from .models import Recipe
+from django.shortcuts import redirect
 
 
 def short_link_redirect(request, pk):
-    recipe = get_object_or_404(Recipe, pk=pk)
-    return redirect(f'/recipes/{recipe.id}')
+    return redirect(f'/recipes/{pk}')

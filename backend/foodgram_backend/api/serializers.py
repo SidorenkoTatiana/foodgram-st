@@ -60,18 +60,14 @@ class IngredientsInRecipeSerializer(serializers.ModelSerializer):
        Ингредиентов в рецепт при его создании."""
     id = serializers.PrimaryKeyRelatedField(
         queryset=models.Ingredient.objects.all())
+    amount = serializers.IntegerField(
+        help_text='Количество ингредиента',
+        min_value=1
+    )
 
     class Meta:
         model = models.RecipeIngredient
         fields = ('id', 'amount')
-
-    def validate_amount(self, value):
-        """Проверка количества ингредиента."""
-        if value <= 0:
-            raise serializers.ValidationError(
-                'Количество должно быть больше нуля'
-            )
-        return value
 
 
 class ShowRecipeSerializer(serializers.ModelSerializer):
@@ -117,6 +113,10 @@ class RecipeSerializer(serializers.ModelSerializer):
     ingredients = IngredientsInRecipeSerializer(many=True, write_only=True)
     author = serializers.HiddenField(default=serializers.CurrentUserDefault())
     image = Base64ImageField()
+    cooking_time = serializers.IntegerField(
+        help_text='Время приготовления (в минутах)',
+        min_value=1
+    )
 
     class Meta:
         model = models.Recipe
@@ -130,24 +130,21 @@ class RecipeSerializer(serializers.ModelSerializer):
             "text",
             "cooking_time",
         )
-        extra_kwargs = {
-            'cooking_time': {'min_value': 1}
-        }
 
     def validate(self, data):
         """Валидация при создании рецепта."""
         ingredients = data.get('ingredients')
         image = data.get('image')
         if not ingredients:
-            raise serializers.ValidationError('Вы не указали необходимые'
+            raise serializers.ValidationError('Не указаны необходимые'
                                               ' ингредиенты для рецепта!')
         ingredients_id_list = [id['id'] for id in ingredients]
         if len(ingredients_id_list) != len(set(ingredients_id_list)):
-            raise serializers.ValidationError('Вы указали одинаковые '
+            raise serializers.ValidationError('Указаны одинаковые '
                                               'ингредиенты при создании '
                                               'рецепта!')
         if not image:
-            raise serializers.ValidationError('Вы не указали картинку '
+            raise serializers.ValidationError('Не указана картинка '
                                               'рецепта!')
         return data
 
@@ -175,10 +172,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         )
 
     def to_representation(self, instance):
-        serializer = ShowRecipeSerializer(
-            instance, context=self.context
-        )
-        return serializer.data
+        return ShowRecipeSerializer(instance, context=self.context).data
 
 
 class RecipeMinifiedSerializer(serializers.ModelSerializer):
