@@ -70,8 +70,8 @@ class Subscribers(models.Model):
 
     class Meta:
         ordering = ('author',)
-        verbose_name = 'Автор - подписчик'
-        verbose_name_plural = verbose_name
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'
         constraints = [
             models.UniqueConstraint(
                 fields=['author', 'user'],

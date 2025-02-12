@@ -3,9 +3,9 @@
 [фронтенд веб-приложения] (http://localhost)
 [спецификация API] (http://localhost/api/docs/)
 
-Автор: Сидоренко Татьяна - https://github.com/SidorenkoTatiana
+[Автор: Сидоренко Татьяна] https://github.com/SidorenkoTatiana
 
-Проект доступен по ссылке: https://github.com/SidorenkoTatiana/foodgram-st
+[Проект] https://github.com/SidorenkoTatiana/foodgram-st
 
 ## Технологии:
 * Python 3.10

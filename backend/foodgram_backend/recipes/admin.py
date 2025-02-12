@@ -51,7 +51,6 @@ class AdminUser(UserAdmin):
         'get_subscriptions_count',
         'get_subscribers',
     )
-    list_filter = ('username',)
     search_fields = ('username',)
     ordering = ('username',)
 
@@ -59,7 +58,7 @@ class AdminUser(UserAdmin):
 class IngredientAdmin(ImportExportActionModelAdmin, admin.ModelAdmin):
     """Настройка Админки-Ингредиентов."""
 
-    @admin.display(description='Число рецептов')
+    @admin.display(description='Рецепты')
     def get_recipes_count(self, obj):
         """Количество рецептов, использующих данный ингредиент."""
         return obj.recipeingredients.count()
@@ -95,11 +94,11 @@ class RecipeAdmin(admin.ModelAdmin):
     @admin.display(description='Ингредиенты')
     def get_ingredients(self, obj):
         """Функция для корректного отображения ингредиентов."""
-        return '\n'.join(
+        return mark_safe('<br>'.join(
             f'{ingredient.ingredient} - {ingredient.amount} '
             f'{ingredient.ingredient.measurement_unit}'
             for ingredient in obj.recipeingredients.all()
-        )
+        ))
 
     @admin.display(description='Избранное')
     def get_favorites_count(self, obj):
