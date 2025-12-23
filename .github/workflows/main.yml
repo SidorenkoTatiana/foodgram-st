@@ -91,4 +91,3 @@ jobs:
       steps:
           - name: Show deploy command
             run: echo "sudo docker-compose pull && sudo docker-compose up -d --remove-orphans"
-
