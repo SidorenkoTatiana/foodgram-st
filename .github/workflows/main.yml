@@ -96,8 +96,8 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd . 
-            docker-compose pull
-            docker-compose up -d --remove-orphans
+            cd /root/ 
+            sudo docker-compose pull
+            sudo docker-compose up -d --remove-orphans
 
        
